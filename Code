@@ -1,0 +1,201 @@
+# Posrednik
+
+
+from abc import ABC, abstractmethod
+
+class Mediator(ABC):
+    @abstractmethod
+    def send_message(self, message, sender):
+        pass
+
+class ChatMediator(Mediator):
+    def __init__(self):
+        self.users = []
+
+    def add_user(self, user):
+        self.users.append(user)
+
+    def send_message(self, message, sender):
+        for user in self.users:
+            if user != sender:
+                user.receive_message(message)
+
+class User(ABC):
+    def __init__(self, mediator, name):
+        self.mediator = mediator
+        self.name = name
+
+    @abstractmethod
+    def send_message(self, message):
+        pass
+
+    @abstractmethod
+    def receive_message(self, message):
+        pass
+
+class ConcreteUser(User):
+    def send_message(self, message):
+        print(f"{self.name} sends: {message}")
+        self.mediator.send_message(message, self)
+
+    def receive_message(self, message):
+        print(f"{self.name} receives: {message}")
+
+if __name__ == "__main__":
+    mediator = ChatMediator()
+
+    user1 = ConcreteUser(mediator, "Alice")
+    user2 = ConcreteUser(mediator, "Bob")
+    user3 = ConcreteUser(mediator, "Charlie")
+
+    mediator.add_user(user1)
+    mediator.add_user(user2)
+    mediator.add_user(user3)
+
+    user1.send_message("Hello, everyone!")
+    user2.send_message("Hi, Ilya!")
+    user3.send_message("Hey, Anokhin!")
+
+
+# Adapter 
+
+class MetricSystem:
+    def get_distance_in_meters(self):
+        return 100  # пример расстояния в метрах
+
+class ImperialSystem:
+    def get_distance_in_feet(self):
+        return 328.08  # пример расстояния в футах
+
+class ImperialToMetricAdapter:
+    def __init__(self, imperial_system):
+        self.imperial_system = imperial_system
+
+    def get_distance_in_meters(self):
+        distance_in_feet = self.imperial_system.get_distance_in_feet()
+        distance_in_meters = self.convert_feet_to_meters(distance_in_feet)
+        return distance_in_meters
+
+    @staticmethod
+    def convert_feet_to_meters(feet):
+        return feet * 0.3048
+
+if __name__ == "__main__":
+    metric_system = MetricSystem()
+    imperial_system = ImperialSystem()
+    adapter = ImperialToMetricAdapter(imperial_system)
+
+    print(f"Distance in meters (MetricSystem): {metric_system.get_distance_in_meters()} meters")
+    print(f"Distance in feet (ImperialSystem): {imperial_system.get_distance_in_feet()} feet")
+    print(f"Distance in meters (Adapter): {adapter.get_distance_in_meters()} meters")
+
+
+# Builder
+
+
+from abc import ABC, abstractmethod
+class House:
+    def __init__(self):
+        self.walls = None
+        self.roof = None
+        self.windows = None
+        self.doors = None
+        self.garage = None
+        self.pool = None
+
+    def __str__(self):
+        return f"House with {self.walls} walls, {self.roof} roof, {self.windows} windows, {self.doors} doors, " \
+               f"{'a garage' if self.garage else 'no garage'}, {'a pool' if self.pool else 'no pool'}."
+
+
+
+class HouseBuilder(ABC):
+    @abstractmethod
+    def build_walls(self):
+        pass
+
+    @abstractmethod
+    def build_roof(self):
+        pass
+
+    @abstractmethod
+    def build_windows(self):
+        pass
+
+    @abstractmethod
+    def build_doors(self):
+        pass
+
+    @abstractmethod
+    def build_garage(self):
+        pass
+
+    @abstractmethod
+    def build_pool(self):
+        pass
+
+    @abstractmethod
+    def get_result(self):
+        pass
+
+class ConcreteHouseBuilder(HouseBuilder):
+    def __init__(self):
+        self.house = House()
+
+    def build_walls(self):
+        self.house.walls = "concrete walls"
+
+    def build_roof(self):
+        self.house.roof = "concrete roof"
+
+    def build_windows(self):
+        self.house.windows = "double-glazed windows"
+
+    def build_doors(self):
+        self.house.doors = "wooden doors"
+
+    def build_garage(self):
+        self.house.garage = True
+
+    def build_pool(self):
+        self.house.pool = True
+
+    def get_result(self):
+        return self.house
+
+class Director:
+    def __init__(self, builder: HouseBuilder):
+        self._builder = builder
+
+    def construct_simple_house(self):
+        self._builder.build_walls()
+        self._builder.build_roof()
+        self._builder.build_windows()
+        self._builder.build_doors()
+
+    def construct_luxury_house(self):
+        self._builder.build_walls()
+        self._builder.build_roof()
+        self._builder.build_windows()
+        self._builder.build_doors()
+        self._builder.build_garage()
+        self._builder.build_pool()
+
+
+if __name__ == "__main__":
+    builder = ConcreteHouseBuilder()
+    director = Director(builder)
+
+    print("Building a simple house:")
+    director.construct_simple_house()
+    house = builder.get_result()
+    print(house)
+
+    print("\nBuilding a luxury house:")
+    builder = ConcreteHouseBuilder()
+    director = Director(builder)
+    director.construct_luxury_house()
+    house = builder.get_result()
+    print(house)
+
+#
